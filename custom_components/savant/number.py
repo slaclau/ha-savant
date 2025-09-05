@@ -135,5 +135,5 @@ class Delay(CoordinatorEntity, NumberEntity):
         else:
             self._attr_available = True
             port_data = data[self.port]
-            self._attr_native_value = int(port_data[f"delay-{self.side}"])
+            self._attr_native_value = int(port_data["other"][f"delay{self.side}"])
         self.async_write_ha_state()
