@@ -9,7 +9,7 @@
   "iot_class": "local_polling",
   "loggers": ["savant"],
   "quality_scale": "bronze",
-  "requirements": ["pysavant==0.0.2"],
+  "requirements": ["pysavant==0.0.3"],
   "ssdp": [],
   "zeroconf": [],
   "version": 1

@@ -8,6 +8,7 @@ from pysavant.switch import AudioSwitch, Switch, VideoSwitch
 
 from homeassistant.components.button import ButtonEntity
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.number import NumberEntity
 from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
@@ -22,6 +23,7 @@ class SavantCoordinator(DataUpdateCoordinator):
     players: list[SavantPlayer] = []
     sensors: list[SensorEntity] = []
     buttons: list[ButtonEntity] = []
+    numbers: list[NumberEntity] = []
     info: dict[str, typing.Any]
     api: Switch | None = None
 
@@ -75,7 +77,8 @@ class SavantCoordinator(DataUpdateCoordinator):
                 source = self.inputs.get(source_port, source_port)
             return {"state": state, "source": source, "other": data}
 
-        return {port["port"]: make_port_data(port) for port in data["outputs"]}
+        outputs = {port["port"]: make_port_data(port) for port in data["outputs"]}
+        return outputs.update({"matrix": {port["port"]: port for port in data["inputs"]}})
 
 
 class SavantAudioSwitchCoordinator(SavantCoordinator):
