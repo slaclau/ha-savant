@@ -35,7 +35,6 @@ async def async_setup_entry(
         )
     else:
         numbers = []
-
     async_add_entities(numbers)
     coordinator.numbers.extend(numbers)
 
@@ -85,8 +84,7 @@ class Trim(CoordinatorEntity, NumberEntity):
         else:
             self._attr_available = True
             port_data = data["matrix"][self.port]
-            print(port_data["trim"])
-            self._attr_native_value = float(port_data["trim"])
+            self._attr_native_value = int(port_data["trim"])
         self.async_write_ha_state()
 
 
@@ -103,6 +101,7 @@ class Delay(CoordinatorEntity, NumberEntity):
     def __init__(self, coordinator, port, side):
         """Create a RawVolumeSensor setting the context to the port index."""
         super().__init__(coordinator, context=[port, side])
+        self.coordinator = coordinator
         self.port = port
         self.side = side
         self._attr_name = f"Delay {side}"
@@ -123,7 +122,7 @@ class Delay(CoordinatorEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
-        await self.coordinator.api.set_input_property(
+        await self.coordinator.api.set_property(
             self.port, f"delay-{self.side}", int(value)
         )
 
@@ -131,11 +130,10 @@ class Delay(CoordinatorEntity, NumberEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         data = self.coordinator.data
-        print(data)
         if data is None:
             self._attr_available = False
         else:
             self._attr_available = True
             port_data = data[self.port]
-            self._attr_native_value = float(port_data["other"][f"delay{self.side}"])
+            self._attr_native_value = int(port_data["other"][f"delay{self.side}"])
         self.async_write_ha_state()
