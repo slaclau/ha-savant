@@ -85,7 +85,8 @@ class Trim(CoordinatorEntity, NumberEntity):
         else:
             self._attr_available = True
             port_data = data["matrix"][self.port]
-            self._attr_native_value = int(port_data["trim"])
+            print(port_data["trim"])
+            self._attr_native_value = float(port_data["trim"])
         self.async_write_ha_state()
 
 
@@ -130,10 +131,11 @@ class Delay(CoordinatorEntity, NumberEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         data = self.coordinator.data
+        print(data)
         if data is None:
             self._attr_available = False
         else:
             self._attr_available = True
             port_data = data[self.port]
-            self._attr_native_value = int(port_data["other"][f"delay{self.side}"])
+            self._attr_native_value = float(port_data["other"][f"delay{self.side}"])
         self.async_write_ha_state()
