@@ -3,7 +3,7 @@
 import logging
 import typing
 
-from savant.switch import AudioSwitch, Switch, VideoSwitch
+from pysavant.switch import AudioSwitch, Switch, VideoSwitch
 import voluptuous as vol
 
 from homeassistant import config_entries
