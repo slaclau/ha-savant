@@ -78,7 +78,9 @@ class SavantCoordinator(DataUpdateCoordinator):
             return {"state": state, "source": source, "other": data}
 
         outputs = {port["port"]: make_port_data(port) for port in data["outputs"]}
-        return outputs.update({"matrix": {port["port"]: port for port in data["inputs"]}})
+        return outputs.update(
+            {"matrix": {port["port"]: port for port in data["inputs"]}}
+        )
 
 
 class SavantAudioSwitchCoordinator(SavantCoordinator):

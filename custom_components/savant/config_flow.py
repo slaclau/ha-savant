@@ -116,7 +116,9 @@ class SavantConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         ),
                     }
                 ),
-                self._get_reconfigure_entry().data if self.source == SOURCE_RECONFIGURE else {},
+                self._get_reconfigure_entry().data
+                if self.source == SOURCE_RECONFIGURE
+                else {},
             ),
         )
 

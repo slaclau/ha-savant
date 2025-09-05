@@ -22,9 +22,17 @@ async def async_setup_entry(
     numbers: list[NumberEntity] = []
     coordinator = config.runtime_data
     if config.data["type"] == "Audio":
-        numbers = [
-            Trim(coordinator, int(input_port)) for input_port in coordinator.inputs
-        ]
+        numbers = (
+            [Trim(coordinator, int(input_port)) for input_port in coordinator.inputs]
+            + [
+                Delay(coordinator, int(output), "left")
+                for output in coordinator.outputs
+            ]
+            + [
+                Delay(coordinator, int(output), "right")
+                for output in coordinator.outputs
+            ]
+        )
     else:
         numbers = []
 
@@ -78,4 +86,54 @@ class Trim(CoordinatorEntity, NumberEntity):
             self._attr_available = True
             port_data = data["matrix"][self.port]
             self._attr_native_value = int(port_data["trim"])
+        self.async_write_ha_state()
+
+
+class Delay(CoordinatorEntity, NumberEntity):
+    """Trim control (configuration) for an input of a Savant audio matrix."""
+
+    _attr_device_class = NumberDeviceClass.DURATION
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_has_entity_name = True
+    _attr_native_unit_of_measurement = "ms"
+    _attr_native_min_value = 0
+    _attr_native_max_value = 85
+
+    def __init__(self, coordinator, port, side):
+        """Create a RawVolumeSensor setting the context to the port index."""
+        super().__init__(coordinator, context=[port, side])
+        self.port = port
+        self.side = side
+        self._attr_name = f"Delay {side}"
+
+    @property
+    def unique_id(self):
+        """The unique id of the sensor - uses the savantID of the coordinator and the port index."""
+        return f"{self.coordinator.info['savantID']}_{self.port}_{self.side}_delay"
+
+    @property
+    def device_info(self):
+        """Links to the device defined by the media player."""
+        return dr.DeviceInfo(
+            identifiers={
+                (DOMAIN, f"{self.coordinator.info['savantID']}.output{self.port}")
+            },
+        )
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Update the current value."""
+        await self.coordinator.api.set_input_property(
+            self.port, f"delay-{self.side}", int(value)
+        )
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        data = self.coordinator.data
+        if data is None:
+            self._attr_available = False
+        else:
+            self._attr_available = True
+            port_data = data[self.port]
+            self._attr_native_value = int(port_data[f"delay-{self.side}"])
         self.async_write_ha_state()
