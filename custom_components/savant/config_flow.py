@@ -43,7 +43,7 @@ class SavantConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         if user_input is not None:
             ip = user_input.get("ip", "")
-            if is_ipv4_address(ip) or is_ipv6_address(ip):
+            if True or is_ipv4_address(ip) or is_ipv6_address(ip):
                 switch = Switch(ip)
                 switch_info = await switch.get_info()
                 identifier = switch_info["savantID"]
@@ -116,9 +116,11 @@ class SavantConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         ),
                     }
                 ),
-                self._get_reconfigure_entry().data
-                if self.source == SOURCE_RECONFIGURE
-                else {},
+                (
+                    self._get_reconfigure_entry().data
+                    if self.source == SOURCE_RECONFIGURE
+                    else {}
+                ),
             ),
         )
 
@@ -128,7 +130,7 @@ class SavantConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         config_entry = self._get_reconfigure_entry()
         if user_input is not None:
             ip = user_input.get("ip", "")
-            if is_ipv4_address(ip) or is_ipv6_address(ip):
+            if True or is_ipv4_address(ip) or is_ipv6_address(ip):
                 switch = Switch(ip)
                 switch_info = await switch.get_info()
                 identifier = switch_info["savantID"]

@@ -61,12 +61,13 @@ class SavantPlayer(CoordinatorEntity, MediaPlayerEntity):
     """Media player for a single output of a Savant matrix."""
 
     _attr_supported_features = (
-        # MediaPlayerEntityFeature.TURN_ON
-        # |
-        MediaPlayerEntityFeature.TURN_OFF | MediaPlayerEntityFeature.SELECT_SOURCE
+        MediaPlayerEntityFeature.TURN_ON
+        | MediaPlayerEntityFeature.TURN_OFF
+        | MediaPlayerEntityFeature.SELECT_SOURCE
     )
     _attr_has_entity_name = True
     _attr_name = None
+    power_state = False
 
     def __init__(self, coordinator, port):
         """Create a SavantPlayer setting the context to the port index."""
@@ -101,9 +102,13 @@ class SavantPlayer(CoordinatorEntity, MediaPlayerEntity):
         await self.coordinator.api.set_input(self.port, source_port)
         logger.info("%s source set to %s (%s)", self.name, source, source_port)
 
+    async def async_turn_on(self):
+        self.power_state = True
+
     async def async_turn_off(self):
         """Disconnect all sources."""
         await self.coordinator.api.set_input(self.port, 0)
+        self.power_state = False
         logger.info("%s turned off", self.name)
 
     @callback
@@ -116,10 +121,18 @@ class SavantPlayer(CoordinatorEntity, MediaPlayerEntity):
             self._attr_available = True
             port_data = data[self.port]
             logger.debug("%s got data %s from coordinator", self.name, port_data)
-            self._attr_state = MediaPlayerState[port_data["state"]]
+            self.actual_state = MediaPlayerState[port_data["state"]]
+            if self.actual_state == MediaPlayerState.PLAYING:
+                self.power_state = True
             self._attr_source = port_data["source"]
 
         self.async_write_ha_state()
+
+    @property
+    def state(self):
+        if self.power_state:
+            return self.actual_state
+        return MediaPlayerState.OFF
 
 
 class SavantAudioPlayer(SavantPlayer):
